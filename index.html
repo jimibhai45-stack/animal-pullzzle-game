@@ -3,336 +3,354 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Animal Memory Puzzle</title>
+<title>Animal Picture Match</title>
 
 <style>
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
+*{box-sizing:border-box;margin:0;padding:0}
+
+body{
+  font-family:Arial,sans-serif;
+  min-height:100vh;
+  background:linear-gradient(135deg,#74ebd5,#9face6);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  padding:15px;
 }
 
-body {
-    font-family: Arial, sans-serif;
-    min-height: 100vh;
-    background: linear-gradient(135deg, #7ee8fa, #80ff72);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 15px;
+.game{
+  width:100%;
+  max-width:480px;
+  text-align:center;
 }
 
-.game-container {
-    width: 100%;
-    max-width: 450px;
-    text-align: center;
+h1{
+  color:white;
+  margin-bottom:12px;
+  text-shadow:0 2px 5px #555;
 }
 
-h1 {
-    color: #ffffff;
-    margin-bottom: 15px;
-    text-shadow: 2px 2px 5px rgba(0,0,0,.25);
+.stats{
+  display:flex;
+  justify-content:space-around;
+  background:white;
+  padding:12px 5px;
+  border-radius:15px;
+  margin-bottom:15px;
+  font-weight:bold;
 }
 
-.info {
-    background: white;
-    padding: 12px;
-    border-radius: 15px;
-    margin-bottom: 15px;
-    display: flex;
-    justify-content: space-around;
-    font-weight: bold;
-    box-shadow: 0 5px 15px rgba(0,0,0,.15);
+.board{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:9px;
 }
 
-.game-board {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 10px;
+.card{
+  aspect-ratio:1/1;
+  perspective:800px;
+  cursor:pointer;
 }
 
-.card {
-    aspect-ratio: 1 / 1;
-    perspective: 800px;
-    cursor: pointer;
+.inner{
+  width:100%;
+  height:100%;
+  position:relative;
+  transition:.45s;
+  transform-style:preserve-3d;
 }
 
-.card-inner {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    transition: transform .45s;
-    transform-style: preserve-3d;
+.card.flip .inner{
+  transform:rotateY(180deg);
 }
 
-.card.flip .card-inner {
-    transform: rotateY(180deg);
+.front,.back{
+  position:absolute;
+  width:100%;
+  height:100%;
+  border-radius:14px;
+  overflow:hidden;
+  backface-visibility:hidden;
+  box-shadow:0 4px 10px rgba(0,0,0,.25);
 }
 
-.card-front,
-.card-back {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    border-radius: 15px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    backface-visibility: hidden;
-    box-shadow: 0 4px 10px rgba(0,0,0,.20);
+.front{
+  background:linear-gradient(135deg,#ff7e5f,#feb47b);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  font-size:35px;
+  color:white;
 }
 
-.card-front {
-    background: linear-gradient(135deg, #ff9966, #ff5e62);
-    color: white;
-    font-size: 35px;
+.back{
+  background:white;
+  transform:rotateY(180deg);
 }
 
-.card-back {
-    background: white;
-    font-size: 45px;
-    transform: rotateY(180deg);
+.back img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
 }
 
-.card.matched .card-back {
-    background: #c8ffb0;
+.matched .back{
+  border:4px solid #32cd32;
 }
 
-button {
-    margin-top: 18px;
-    border: none;
-    padding: 13px 30px;
-    border-radius: 30px;
-    background: #222;
-    color: white;
-    font-size: 17px;
-    font-weight: bold;
-    cursor: pointer;
+button{
+  margin-top:18px;
+  padding:13px 30px;
+  border:0;
+  border-radius:30px;
+  background:#222;
+  color:white;
+  font-size:17px;
+  font-weight:bold;
+  cursor:pointer;
 }
 
-button:active {
-    transform: scale(.95);
-}
-
-.win-message {
-    display: none;
-    background: white;
-    margin-top: 15px;
-    padding: 15px;
-    border-radius: 15px;
-    font-size: 20px;
-    font-weight: bold;
-}
-
-@media(max-width:400px) {
-    .game-board {
-        gap: 7px;
-    }
-
-    .card-back {
-        font-size: 36px;
-    }
+.win{
+  display:none;
+  margin-top:15px;
+  background:white;
+  padding:15px;
+  border-radius:15px;
+  font-weight:bold;
+  font-size:19px;
 }
 </style>
 </head>
 
 <body>
 
-<div class="game-container">
+<div class="game">
 
-<h1>🐾 Animal Memory 🐾</h1>
+<h1>🐾 Animal Picture Match</h1>
 
-<div class="info">
-    <span>Moves: <span id="moves">0</span></span>
-    <span>Time: <span id="timer">0</span>s</span>
-    <span>Score: <span id="score">0</span></span>
+<div class="stats">
+ <span>Moves: <b id="moves">0</b></span>
+ <span>Time: <b id="time">0</b>s</span>
+ <span>Score: <b id="score">0</b></span>
 </div>
 
-<div class="game-board" id="gameBoard"></div>
+<div class="board" id="board"></div>
 
-<div class="win-message" id="winMessage">
-    🎉 Congratulations! You matched all animals!
+<div class="win" id="win">
+🎉 Amazing! You matched all animals!
 </div>
 
-<button onclick="startGame()">🔄 Restart Game</button>
+<button onclick="startGame()">🔄 Play Again</button>
 
 </div>
 
 <script>
 
 const animals = [
-    "🐶",
-    "🐱",
-    "🦁",
-    "🐼",
-    "🐵",
-    "🐰",
-    "🐯",
-    "🐨"
+ {
+  name:"dog",
+  img:"https://images.unsplash.com/photo-1552053831-71594a27632d?w=400"
+ },
+ {
+  name:"cat",
+  img:"https://images.unsplash.com/photo-1573865526739-10659fec78a5?w=400"
+ },
+ {
+  name:"lion",
+  img:"https://images.unsplash.com/photo-1546182990-dffeafbe841d?w=400"
+ },
+ {
+  name:"tiger",
+  img:"https://images.unsplash.com/photo-1561731216-c3a4d99437d5?w=400"
+ },
+ {
+  name:"panda",
+  img:"https://images.unsplash.com/photo-1564349683136-77e08dba1ef7?w=400"
+ },
+ {
+  name:"monkey",
+  img:"https://images.unsplash.com/photo-1540573133985-87b6da6d54a9?w=400"
+ },
+ {
+  name:"elephant",
+  img:"https://images.unsplash.com/photo-1557050543-4d5f4e07ef46?w=400"
+ },
+ {
+  name:"giraffe",
+  img:"https://images.unsplash.com/photo-1547721064-da6cfb341d50?w=400"
+ }
 ];
 
-let cards = [];
-let firstCard = null;
-let secondCard = null;
-let lockBoard = false;
+let first=null;
+let second=null;
+let lock=false;
 
-let moves = 0;
-let score = 0;
-let matchedPairs = 0;
-let time = 0;
-let timerInterval = null;
-let timerStarted = false;
+let moves=0;
+let score=0;
+let matched=0;
 
-function startGame() {
+let seconds=0;
+let timer=null;
+let started=false;
 
-    clearInterval(timerInterval);
+function startGame(){
 
-    const board = document.getElementById("gameBoard");
+ clearInterval(timer);
 
-    board.innerHTML = "";
+ first=null;
+ second=null;
+ lock=false;
 
-    document.getElementById("winMessage").style.display = "none";
+ moves=0;
+ score=0;
+ matched=0;
+ seconds=0;
+ started=false;
 
-    moves = 0;
-    score = 0;
-    matchedPairs = 0;
-    time = 0;
+ document.getElementById("moves").innerText=0;
+ document.getElementById("score").innerText=0;
+ document.getElementById("time").innerText=0;
 
-    firstCard = null;
-    secondCard = null;
+ document.getElementById("win").style.display="none";
 
-    lockBoard = false;
-    timerStarted = false;
+ const board=document.getElementById("board");
 
-    document.getElementById("moves").textContent = moves;
-    document.getElementById("score").textContent = score;
-    document.getElementById("timer").textContent = time;
+ board.innerHTML="";
 
-    cards = [...animals, ...animals];
+ let cards=[...animals,...animals];
 
-    cards.sort(() => Math.random() - 0.5);
+ cards.sort(()=>Math.random()-0.5);
 
-    cards.forEach(animal => {
+ cards.forEach(animal=>{
 
-        const card = document.createElement("div");
+  const card=document.createElement("div");
 
-        card.classList.add("card");
+  card.className="card";
 
-        card.dataset.animal = animal;
+  card.dataset.name=animal.name;
 
-        card.innerHTML = `
-            <div class="card-inner">
+  card.innerHTML=`
 
-                <div class="card-front">
-                    ❓
-                </div>
+  <div class="inner">
 
-                <div class="card-back">
-                    ${animal}
-                </div>
+   <div class="front">
+    ❓
+   </div>
 
-            </div>
-        `;
+   <div class="back">
+    <img src="${animal.img}" alt="${animal.name}">
+   </div>
 
-        card.addEventListener("click", flipCard);
+  </div>
 
-        board.appendChild(card);
-    });
+  `;
+
+  card.onclick=flipCard;
+
+  board.appendChild(card);
+
+ });
+
 }
 
-function startTimer() {
+function startTimer(){
 
-    if (timerStarted) return;
+ if(started)return;
 
-    timerStarted = true;
+ started=true;
 
-    timerInterval = setInterval(() => {
+ timer=setInterval(()=>{
 
-        time++;
+  seconds++;
 
-        document.getElementById("timer").textContent = time;
+  document.getElementById("time").innerText=seconds;
 
-    }, 1000);
+ },1000);
+
 }
 
-function flipCard() {
+function flipCard(){
 
-    startTimer();
+ if(lock)return;
 
-    if (lockBoard) return;
+ if(this===first)return;
 
-    if (this === firstCard) return;
+ if(this.classList.contains("matched"))return;
 
-    if (this.classList.contains("matched")) return;
+ startTimer();
 
-    this.classList.add("flip");
+ this.classList.add("flip");
 
-    if (!firstCard) {
+ if(!first){
 
-        firstCard = this;
+  first=this;
 
-        return;
-    }
+  return;
 
-    secondCard = this;
+ }
 
-    moves++;
+ second=this;
 
-    document.getElementById("moves").textContent = moves;
+ moves++;
 
-    checkMatch();
+ document.getElementById("moves").innerText=moves;
+
+ checkCards();
+
 }
 
-function checkMatch() {
+function checkCards(){
 
-    const match =
-        firstCard.dataset.animal ===
-        secondCard.dataset.animal;
+ if(first.dataset.name===second.dataset.name){
 
-    if (match) {
+  first.classList.add("matched");
 
-        firstCard.classList.add("matched");
-        secondCard.classList.add("matched");
+  second.classList.add("matched");
 
-        score += 100;
-        matchedPairs++;
+  score+=100;
 
-        document.getElementById("score").textContent = score;
+  matched++;
 
-        resetCards();
+  document.getElementById("score").innerText=score;
 
-        if (matchedPairs === animals.length) {
+  reset();
 
-            clearInterval(timerInterval);
+  if(matched===animals.length){
 
-            setTimeout(() => {
+   clearInterval(timer);
 
-                document.getElementById("winMessage").style.display = "block";
+   setTimeout(()=>{
 
-            }, 400);
-        }
+    document.getElementById("win").style.display="block";
 
-    } else {
+   },500);
 
-        lockBoard = true;
+  }
 
-        setTimeout(() => {
+ }else{
 
-            firstCard.classList.remove("flip");
-            secondCard.classList.remove("flip");
+  lock=true;
 
-            resetCards();
+  setTimeout(()=>{
 
-        }, 800);
-    }
+   first.classList.remove("flip");
+
+   second.classList.remove("flip");
+
+   reset();
+
+  },900);
+
+ }
+
 }
 
-function resetCards() {
+function reset(){
 
-    firstCard = null;
-    secondCard = null;
-    lockBoard = false;
+ first=null;
+ second=null;
+ lock=false;
+
 }
 
 startGame();
